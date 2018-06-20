@@ -1,8 +1,17 @@
 import numpy as np
 
 
-def create_dataset(time_steps, n_samples, min_duration, np_seed=None):
-    if np_seed:
+def create_simple_oscillator_data_set(time_steps, n_samples, min_duration, np_seed=None):
+    """
+    Create a data set of input outputs where each input has one stretch of high values.
+     Each output has a corresponding period of alternating high-low patterns.
+    :param time_steps:
+    :param n_samples:
+    :param min_duration:
+    :param np_seed:
+    :return (X, Y): both of shapes (n_samples, n_time_steps)
+    """
+    if np_seed is not None:
         np.random.seed(np_seed)
 
     _X = []
