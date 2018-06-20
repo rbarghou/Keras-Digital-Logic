@@ -1,4 +1,7 @@
+import json
+
 import keras
+from keras.callbacks import Callback
 from keras.layers import SimpleRNN, Dense
 from keras.models import Sequential
 
@@ -69,3 +72,38 @@ def construct_model(n_neurons,
         model.add(Dense(1, activation=final_layer_activation))
 
     return model
+
+
+class RNNOExperimentNLJSONLogger(Callback):
+    """
+    Logs the loss, configuration and weights of an RNNO every epoch.
+
+    Writes this data in NLJSON format.
+    """
+
+    class ModeNotValid(Exception):
+        pass
+
+    def __init__(self, open_file, **extra_data):
+        if open_file.closed or open_file.mode not in "wa":
+            raise RNNOExperimentNLJSONLogger.ModeNotValid(
+                "You must pass in an file open for writing or appending"
+            )
+        self.file = open_file
+        self.extra_data = extra_data
+        super(RNNOExperimentNLJSONLogger, self).__init__()
+
+    def write_record(self, **kwargs):
+        record = {
+            "weights": self.model.get_weights(),
+            "params": self.params,
+            "extra_data": self.extra_data,
+        }
+        record.update(kwargs)
+        self.file.write("{}\n".format(json.dumps(record)))
+
+    def on_train_begin(self, logs=None):
+        self.write_record()
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.write_record()
