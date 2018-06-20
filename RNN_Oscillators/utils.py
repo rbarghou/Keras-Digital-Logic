@@ -1,13 +1,14 @@
 import numpy as np
 
 
-def create_simple_oscillator_data_set(time_steps, n_samples, min_duration, np_seed=None):
+def create_oscillator_data_set(time_steps, n_samples, min_duration, wavelength=1, np_seed=None):
     """
     Create a data set of input outputs where each input has one stretch of high values.
      Each output has a corresponding period of alternating high-low patterns.
     :param time_steps:
     :param n_samples:
     :param min_duration:
+    :param wavelength:
     :param np_seed:
     :return (X, Y): both of shapes (n_samples, n_time_steps)
     """
@@ -26,7 +27,7 @@ def create_simple_oscillator_data_set(time_steps, n_samples, min_duration, np_se
 
         _Y_sample = -np.ones((time_steps, 1))
         _Y_sub = _Y_sample[on:off, 0]
-        _Y_sub = _Y_sub ** range(off - on)
+        _Y_sub = _Y_sub ** ((np.array(range(off - on)) / wavelength).astype(np.int))
         _Y_sample[on:off, 0] = _Y_sub
 
         _X.append(_X_sample)
