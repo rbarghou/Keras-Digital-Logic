@@ -1,3 +1,7 @@
+import keras
+from keras.layers import SimpleRNN, Dense
+from keras.models import Sequential
+
 import numpy as np
 
 
@@ -37,3 +41,16 @@ def create_oscillator_data_set(time_steps, n_samples, min_duration, wavelength=1
     _Y = np.array(_Y)
 
     return _X, _Y
+
+
+def construct_model(n_neurons, time_steps, activation="tanh", clear_session=True):
+    if clear_session:
+        keras.backend.clear_session()
+
+    model = Sequential([
+        SimpleRNN(n_neurons, return_sequences=True, input_shape=(time_steps, 1)),
+        Dense(1, activation=activation),
+    ])
+
+    return model
+
