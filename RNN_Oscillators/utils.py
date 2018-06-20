@@ -4,6 +4,8 @@ from keras.models import Sequential
 
 import numpy as np
 
+import tensorflow as tf
+
 
 def create_oscillator_data_set(time_steps, n_samples, min_duration, wavelength=1, np_seed=None):
     """
@@ -43,14 +45,27 @@ def create_oscillator_data_set(time_steps, n_samples, min_duration, wavelength=1
     return _X, _Y
 
 
-def construct_model(n_neurons, time_steps, activation="tanh", clear_session=True):
+def construct_model(n_neurons,
+                    time_steps,
+                    recurrent_activation="tanh",
+                    final_layer_activation="tanh",
+                    final_layer_recurrent=False,
+                    tf_seed=None,
+                    clear_session=True):
+    if tf_seed is not None:
+        tf.set_random_seed(tf_seed)
+
     if clear_session:
         keras.backend.clear_session()
 
-    model = Sequential([
-        SimpleRNN(n_neurons, return_sequences=True, input_shape=(time_steps, 1)),
-        Dense(1, activation=activation),
-    ])
+    model = Sequential()
+    model.add(SimpleRNN(n_neurons,
+                        activation=recurrent_activation,
+                        return_sequences=True,
+                        input_shape=(time_steps, 1)))
+    if final_layer_recurrent:
+        model.add(SimpleRNN(1, activation=final_layer_activation, return_sequences=True))
+    else:
+        model.add(Dense(1, activation=final_layer_activation))
 
     return model
-
