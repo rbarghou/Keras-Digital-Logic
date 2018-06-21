@@ -105,10 +105,10 @@ class RNNOExperimentNLJSONLogger(Callback):
         self.file.write("{}\n".format(json.dumps(record)))
 
     def on_train_begin(self, logs=None):
-        self.write_record()
+        self.write_record(**logs)
 
     def on_epoch_end(self, epoch, logs=None):
-        self.write_record()
+        self.write_record(**logs)
 
 
 class ThresholdStopper(Callback):
@@ -118,3 +118,68 @@ class ThresholdStopper(Callback):
         if acc > .99999:
             self.model.stop_training = True
 
+
+def run_experimental_condition(
+        file_path,
+        time_steps=128,
+        n_samples=1024,
+        min_duration=3,
+        wavelength=1,
+        np_seed=None,
+        n_neurons=1,
+        recurrent_activation="tanh",
+        final_layer_activation="tanh",
+        final_layer_recurrent=False,
+        tf_seed=None,
+        clear_session=True,
+        optimizer="adam",
+        loss="mse",
+        num_epochs=400):
+    """
+    :param file_path:
+    :param time_steps:
+    :param n_samples:
+    :param min_duration:
+    :param wavelength:
+    :param np_seed:
+    :param n_neurons:
+    :param recurrent_activation:
+    :param final_layer_activation:
+    :param final_layer_recurrent:
+    :param tf_seed:
+    :param clear_session:
+    :param optimizer:
+    :param loss:
+    :param num_epochs:
+    :return:
+    """
+    model = construct_model(
+        n_neurons,
+        time_steps,
+        recurrent_activation,
+        final_layer_activation,
+        final_layer_recurrent,
+        tf_seed,
+        clear_session
+    )
+
+    model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=["accuracy"]
+    )
+
+    _X, _Y = create_oscillator_data_set(
+        time_steps,
+        n_samples,
+        min_duration,
+        wavelength,
+        np_seed
+    )
+
+    with open(file_path, "w") as log_file:
+        logger = RNNOExperimentNLJSONLogger(log_file)
+        stopper = ThresholdStopper()
+        model.fit(_X, _Y, epochs=num_epochs, callbacks=[logger, stopper])
+
+    return model
