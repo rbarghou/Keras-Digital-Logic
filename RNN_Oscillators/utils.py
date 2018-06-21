@@ -1,3 +1,5 @@
+import gc
+
 import json
 
 import keras
@@ -193,4 +195,6 @@ def run_experimental_condition(
         stopper = ThresholdStopper()
         model.fit(_X, _Y, epochs=num_epochs, callbacks=[logger, stopper])
 
-    return model
+    keras.backend.clear_session()
+    del model
+    gc.collect()
