@@ -94,8 +94,10 @@ class RNNOExperimentNLJSONLogger(Callback):
         super(RNNOExperimentNLJSONLogger, self).__init__()
 
     def write_record(self, **kwargs):
+        weights = self.model.get_weights()
+        weights = [weight_array.tolist() for weight_array in weights]
         record = {
-            "weights": self.model.get_weights(),
+            "weights": weights,
             "params": self.params,
             "extra_data": self.extra_data,
         }
@@ -107,3 +109,12 @@ class RNNOExperimentNLJSONLogger(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         self.write_record()
+
+
+class ThresholdStopper(Callback):
+
+    def on_epoch_end(self, epoch, logs=None):
+        acc = logs.get("acc")
+        if acc > .99999:
+            self.model.stop_training = True
+
