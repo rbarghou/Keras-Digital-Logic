@@ -115,7 +115,7 @@ class ThresholdStopper(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         acc = logs.get("acc")
-        if acc > .99999:
+        if acc > .9995:
             self.model.stop_training = True
 
 
@@ -178,7 +178,18 @@ def run_experimental_condition(
     )
 
     with open(file_path, "w") as log_file:
-        logger = RNNOExperimentNLJSONLogger(log_file)
+        logger = RNNOExperimentNLJSONLogger(
+            log_file,
+            n_neurons=n_neurons,
+            wavelength=wavelength,
+            np_seed=np_seed,
+            tf_seed=tf_seed,
+            optimizer=optimizer,
+            loss=loss,
+            recurrent_activation=recurrent_activation,
+            final_layer_recurrent=final_layer_recurrent,
+            final_layer_activation=final_layer_activation,
+        )
         stopper = ThresholdStopper()
         model.fit(_X, _Y, epochs=num_epochs, callbacks=[logger, stopper])
 
